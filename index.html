@@ -64,6 +64,15 @@
     color: #888;
     margin-bottom: 24px;
   }
+
+  #meme {
+    display: none;
+    width: 100%;
+    max-height: 240px;
+    object-fit: contain;
+    border-radius: 16px;
+    margin-bottom: 20px;
+  }
 </style>
 </head>
 <body>
@@ -72,6 +81,7 @@
   <p id="progress">1 / 17</p>
   <p id="question"></p>
   <p id="note"></p>
+  <img id="meme" alt="">
   <button id="btnA">평생 라면만 먹기</button>
   <p class="vs">VS</p>
   <button id="btnB">평생 떡볶이만 먹기</button>
@@ -79,14 +89,14 @@
 <script>
 const questions = [
   // 🟢 워밍업: 가볍게 웃으면서 시작
-  { q: "애인이 먹고 있는 핫도그, 친구가 \"한입만?\"", a: "괜찮다", b: "안 괜찮다" },
+  { q: "애인이 먹고 있는 핫도그, 친구가 \"한입만?\"", a: "괜찮다", b: "안 괜찮다", img: "frown.png" },
   { q: "최악의 이별 타이밍은?", a: "월요일 아침 9시", b: "금요일 밤 12시" },
-  { q: "들었을 때 더 기분 나쁜 말은?", a: "넌 연애하기엔 좋은 사람이야", b: "넌 결혼하기엔 좋은 사람이야" },
+  { q: "들었을 때 더 기분 나쁜 말은?", a: "넌 연애하기엔 좋은 사람이야", b: "넌 결혼하기엔 좋은 사람이야", img: "crazy.png" },
 
   // 🟡 플러팅 판정단: 의견 갈리기 시작
   { q: "더 foxy한 행동은?", a: "단둘이 인생네컷 찍자고 하기", b: "아픈 티 내는 사진 보내기" },
   { q: "일 때문에 힘들어하니까 힘내라며 기프티콘 보내주기", a: "플러팅 맞다", b: "플러팅 아니다" },
-  { q: "일 때문에 카페에 갔는데 커플이면 1+1이라길래 커플이라고 했다", a: "가능", b: "불가능" },
+  { q: "일 때문에 카페에 갔는데 커플이면 1+1이라길래 커플이라고 했다", a: "가능", b: "불가능", img: "hotplace.png" },
 
   // 🟠 슬슬 질투 모드
   { q: "전 애인과 더 싫은 것은?", a: "인스타 맞팔", b: "OTT 계정 공유" },
@@ -98,11 +108,11 @@ const questions = [
   { q: "더 신경 쓰이는 사람은?", a: "같은 회사 다니는 전 애인", b: "소꿉친구라는 이성친구" },
   { q: "더 화나는 상황은?", a: "운동 후 내 애인에게 거울 셀카 보냄", b: "자기 소지품을 내 애인 공간 곳곳에 둠" },
   { q: "더 거슬리는 사람은?", a: "내가 봐도 나보다 예쁘거나 잘생긴 사람", b: "나보다 내 애인을 더 잘 아는 사람" },
-  { q: "더 화나는 상황은?", a: "생일 전전날 새벽까지 이성친구와 단둘이 놂", b: "이성친구와 2시간 통화하느라 생일 당일 12시에 연락 안 됨" },
+  { q: "더 화나는 상황은?", a: "생일 전전날 새벽까지 이성친구와 단둘이 놂", b: "이성친구와 2시간 통화하느라 생일 당일 12시에 연락 안 됨", img: "crazy.png" },
 
   // 💥 클라이맥스: 친구까지 엮이는 상황극
   { q: "집에서 애인, 내 친구랑 셋이 술 마시다 내가 취해서 먼저 자러 들어갔다면?", a: "둘이 나 빼고 계속 마셔도 상관없음", b: "내가 없으니 술자리를 끝내야 함", note: "추가상황: 둘은 안 취했고, 나만 취해서 어지러운 상태" },
-  { q: "셋이 술 마시다 애인이 담배 피러 나가자 내 친구가 따라 나갔다", a: "그럴 수도 있지, 신경 안 씀", b: "나도 따라가서 같이 있는다", note: "추가상황: 친구는 담배 안 피는데 뭐 사러 간다며 따라 나감" },
+  { q: "셋이 술 마시다 애인이 담배 피러 나가자 내 친구가 따라 나갔다", a: "그럴 수도 있지, 신경 안 씀", b: "나도 따라가서 같이 있는다", note: "추가상황: 친구는 담배 안 피는데 뭐 사러 간다며 따라 나감", img: "frown.png" },
 
   // 💕 마무리: 달달하게 끝내기
   { q: "한 달 동안 하나만 금지된다면?", a: "뽀뽀 금지", b: "손잡기 금지" },
@@ -117,6 +127,7 @@ const noteEl = document.getElementById("note");
 const btnA = document.getElementById("btnA");
 const btnB = document.getElementById("btnB");
 const vsEl = document.querySelector(".vs");
+const memeEl = document.getElementById("meme");
 
 // ③ 보여주기
 function show() {
@@ -126,6 +137,14 @@ function show() {
   noteEl.textContent = item.note || "";
   btnA.textContent = item.a;
   btnB.textContent = item.b;
+
+  // 짤이 있는 질문이면 보여주고, 없으면 숨기기
+  if (item.img) {
+    memeEl.src = item.img;
+    memeEl.style.display = "block";
+  } else {
+    memeEl.style.display = "none";
+  }
 }
 
 // ④ 넘기기
@@ -146,6 +165,8 @@ function finish() {
   btnA.textContent = "처음부터 다시 하기";
   btnB.style.display = "none";
   vsEl.style.display = "none";
+  memeEl.src = "laugh.png";
+  memeEl.style.display = "block";
 }
 
 // ⑥ 다시 하기
