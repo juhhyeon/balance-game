@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>밸런스게임</title>
+    <style>
+  body {
+    margin: 0;
+    font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    background: #fafafa;
+    color: #222;
+  }
+
+  #game {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+
+  #progress {
+    color: #999;
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+
+  button {
+    width: 100%;
+    padding: 28px 16px;
+    font-size: 18px;
+    font-weight: 600;
+    background: white;
+    color: #222;
+    border: 1.5px solid #e5e5e5;
+    border-radius: 16px;
+    cursor: pointer;
+  }
+
+  button:active {
+    background: #222;
+    color: white;
+  }
+
+  .vs {
+    color: #ff5a5f;
+    font-weight: 800;
+    margin: 14px 0;
+  }
+    #question {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  #note {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+    <main id="game">
+  <h1>💞 밸런스게임</h1>
+
+  <button id="btnA">평생 라면만 먹기</button>
+  <p class="vs">VS</p>
+  <button id="btnB">평생 떡볶이만 먹기</button>
+</main>
+<script>
+const questions = [
+  // 🟢 워밍업: 가볍게 웃으면서 시작
+  { q: "애인이 먹고 있는 핫도그, 친구가 \"한입만?\"", a: "괜찮다", b: "안 괜찮다" },
+  { q: "최악의 이별 타이밍은?", a: "월요일 아침 9시", b: "금요일 밤 12시" },
+  { q: "들었을 때 더 기분 나쁜 말은?", a: "넌 연애하기엔 좋은 사람이야", b: "넌 결혼하기엔 좋은 사람이야" },
+
+  // 🟡 플러팅 판정단: 의견 갈리기 시작
+  { q: "더 foxy한 행동은?", a: "단둘이 인생네컷 찍자고 하기", b: "아픈 티 내는 사진 보내기" },
+  { q: "일 때문에 힘들어하니까 힘내라며 기프티콘 보내주기", a: "플러팅 맞다", b: "플러팅 아니다" },
+  { q: "일 때문에 카페에 갔는데 커플이면 1+1이라길래 커플이라고 했다", a: "가능", b: "불가능" },
+
+  // 🟠 슬슬 질투 모드
+  { q: "전 애인과 더 싫은 것은?", a: "인스타 맞팔", b: "OTT 계정 공유" },
+  { q: "애인에게 이런 친구가 있다면 더 신경 쓰이는 건?", a: "스토리마다 하트 누르는 친구", b: "올릴 때마다 DM 답장하는 친구" },
+  { q: "애인이 이성친구에게 받는 것 중 더 싫은 것은?", a: "운동 배우기", b: "모닝콜 받기" },
+  { q: "비 오는 날, 애인이 했을 때 더 싫은 것은?", a: "남/여사친과 한 우산 쓰고 정류장까지 데려다주기", b: "남/여사친에게 자기 우산 주고 비 맞고 오기" },
+
+  // 🔴 본격 매운맛
+  { q: "더 신경 쓰이는 사람은?", a: "같은 회사 다니는 전 애인", b: "소꿉친구라는 이성친구" },
+  { q: "더 화나는 상황은?", a: "운동 후 내 애인에게 거울 셀카 보냄", b: "자기 소지품을 내 애인 공간 곳곳에 둠" },
+  { q: "더 거슬리는 사람은?", a: "내가 봐도 나보다 예쁘거나 잘생긴 사람", b: "나보다 내 애인을 더 잘 아는 사람" },
+  { q: "더 화나는 상황은?", a: "생일 전전날 새벽까지 이성친구와 단둘이 놂", b: "이성친구와 2시간 통화하느라 생일 당일 12시에 연락 안 됨" },
+
+  // 💥 클라이맥스: 친구까지 엮이는 상황극
+  { q: "집에서 애인, 내 친구랑 셋이 술 마시다 내가 취해서 먼저 자러 들어갔다면?", a: "둘이 나 빼고 계속 마셔도 상관없음", b: "내가 없으니 술자리를 끝내야 함", note: "추가상황: 둘은 안 취했고, 나만 취해서 어지러운 상태" },
+  { q: "셋이 술 마시다 애인이 담배 피러 나가자 내 친구가 따라 나갔다", a: "그럴 수도 있지, 신경 안 씀", b: "나도 따라가서 같이 있는다", note: "추가상황: 친구는 담배 안 피는데 뭐 사러 간다며 따라 나감" },
+
+  // 💕 마무리: 달달하게 끝내기
+  { q: "한 달 동안 하나만 금지된다면?", a: "뽀뽀 금지", b: "손잡기 금지" },
+];
+// ① 지금 몇 번째 질문인지 기억하는 변수
+let current = 0;
+
+// ② 화면에서 바꿀 요소들 찾아두기 (2단계에서 붙인 id 사용!)
+const progressEl = document.getElementById("progress");
+const questionEl = document.getElementById("question");
+const noteEl = document.getElementById("note");
+const btnA = document.getElementById("btnA");
+const btnB = document.getElementById("btnB");
+const vsEl = document.querySelector(".vs");
+
+// ③ 보여주기
+function show() {
+  const item = questions[current];
+  progressEl.textContent = `${current + 1} / ${questions.length}`;
+  questionEl.textContent = item.q;
+  noteEl.textContent = item.note || "";
+  btnA.textContent = item.a;
+  btnB.textContent = item.b;
+}
+
+// ④ 넘기기
+function next() {
+  current = current + 1;
+  if (current < questions.length) {
+    show();
+  } else {
+    finish();
+  }
+}
+
+// ⑤ 끝내기
+function finish() {
+  progressEl.textContent = "끝!";
+  questionEl.textContent = "오늘 토론은 여기까지";
+  noteEl.textContent = "";
+  btnA.textContent = "처음부터 다시 하기";
+  btnB.style.display = "none";
+  vsEl.style.display = "none";
+}
+
+// ⑥ 다시 하기
+function restart() {
+  current = 0;
+  btnB.style.display = "";
+  vsEl.style.display = "";
+  show();
+}
+
+// ⑦ 버튼 누르면 실행되게 연결
+btnA.addEventListener("click", () => {
+  if (current >= questions.length) {
+    restart();
+  } else {
+    next();
+  }
+});
+btnB.addEventListener("click", next);
+
+// ⑧ 처음 열었을 때 첫 질문 띄우기
+show();
+</script>
+</body>
+</html>
